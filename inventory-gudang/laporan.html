@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan | Inventory Gudang</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-indigo-700 text-white flex flex-col shadow-lg">
+      <div class="p-6 text-2xl font-bold border-b border-indigo-600">
+        📦 Inventory
+      </div>
+      <nav class="flex-1 px-4 pt-4 space-y-2">
+        <a href="index.html" class="flex items-center px-3 py-2 hover:bg-indigo-600 rounded transition">
+          <i data-feather="home" class="mr-2"></i> Dashboard
+        </a>
+        <a href="barang.html" class="flex items-center px-3 py-2 hover:bg-indigo-600 rounded transition">
+          <i data-feather="box" class="mr-2"></i> Barang
+        </a>
+        <a href="transaksi.html" class="flex items-center px-3 py-2 hover:bg-indigo-600 rounded transition">
+          <i data-feather="repeat" class="mr-2"></i> Transaksi
+        </a>
+        <a href="laporan.html" class="flex items-center px-3 py-2 bg-indigo-600 rounded transition">
+          <i data-feather="file-text" class="mr-2"></i> Laporan
+        </a>
+      </nav>
+      <div class="p-4 text-sm text-gray-300 border-t border-indigo-600">
+        &copy; 2025 Adji Sudar Wijaya
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+      <!-- Header -->
+      <header class="bg-white shadow p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-gray-800">Laporan Transaksi</h1>
+        <div class="text-sm text-gray-600">Rekap transaksi masuk dan keluar</div>
+      </header>
+
+      <!-- Main Section -->
+      <main class="p-6 overflow-y-auto space-y-6">
+        <!-- Filter -->
+        <div class="bg-white p-4 rounded-lg shadow">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Filter Jenis Transaksi</label>
+          <select id="filterJenis" onchange="renderLaporan()" class="w-48 p-2 border rounded focus:ring-2 focus:ring-indigo-400">
+            <option value="semua">Semua</option>
+            <option value="masuk">Masuk</option>
+            <option value="keluar">Keluar</option>
+          </select>
+        </div>
+
+        <!-- Ringkasan -->
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold mb-2">Total Transaksi Masuk</h3>
+            <p class="text-2xl font-bold text-green-600" id="totalMasuk">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold mb-2">Total Transaksi Keluar</h3>
+            <p class="text-2xl font-bold text-red-600" id="totalKeluar">0</p>
+          </div>
+        </div>
+
+        <!-- Tabel Laporan -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-lg font-semibold mb-4">Detail Transaksi</h3>
+          <div class="overflow-x-auto">
+            <table class="table-auto w-full text-sm">
+              <thead>
+                <tr class="bg-gray-200 text-gray-700">
+                  <th class="px-4 py-2 text-left">Tanggal</th>
+                  <th class="px-4 py-2 text-left">Nama Barang</th>
+                  <th class="px-4 py-2 text-left">Jumlah</th>
+                  <th class="px-4 py-2 text-left">Jenis</th>
+                </tr>
+              </thead>
+              <tbody id="laporanList">
+                <tr class="text-center text-gray-400"><td colspan="4">Belum ada data transaksi.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    feather.replace();
+
+    const laporan = [
+      { date: "24/07/2025 10:00", item: "Kardus", qty: 10, type: "masuk" },
+      { date: "24/07/2025 11:30", item: "Botol", qty: 5, type: "keluar" },
+      { date: "24/07/2025 12:00", item: "Plastik", qty: 20, type: "masuk" },
+      { date: "24/07/2025 13:00", item: "Kardus", qty: 4, type: "keluar" }
+    ];
+
+    function renderLaporan() {
+      const filter = document.getElementById("filterJenis").value;
+      const tbody = document.getElementById("laporanList");
+      tbody.innerHTML = "";
+
+      let totalMasuk = 0;
+      let totalKeluar = 0;
+
+      const filtered = laporan.filter(trans => {
+        if (trans.type === "masuk") totalMasuk += trans.qty;
+        if (trans.type === "keluar") totalKeluar += trans.qty;
+        return filter === "semua" || trans.type === filter;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr class="text-center text-gray-400"><td colspan="4">Tidak ada transaksi sesuai filter.</td></tr>`;
+      } else {
+        filtered.forEach(trans => {
+          tbody.innerHTML += `
+            <tr class="text-gray-700">
+              <td class="px-4 py-2">${trans.date}</td>
+              <td class="px-4 py-2">${trans.item}</td>
+              <td class="px-4 py-2">${trans.qty}</td>
+              <td class="px-4 py-2 capitalize">${trans.type}</td>
+            </tr>
+          `;
+        });
+      }
+
+      document.getElementById("totalMasuk").textContent = totalMasuk;
+      document.getElementById("totalKeluar").textContent = totalKeluar;
+    }
+
+    renderLaporan();
+  </script>
+
+</body>
+</html>

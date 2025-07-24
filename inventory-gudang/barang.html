@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barang | Inventory Gudang</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- Layout -->
+  <div class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-indigo-700 text-white flex flex-col shadow-lg">
+      <div class="p-6 text-2xl font-bold border-b border-indigo-600">
+        📦 Inventory
+      </div>
+      <nav class="flex-1 px-4 pt-4 space-y-2">
+        <a href="index.html" class="flex items-center px-3 py-2 hover:bg-indigo-600 rounded transition">
+          <i data-feather="home" class="mr-2"></i> Dashboard
+        </a>
+        <a href="barang.html" class="flex items-center px-3 py-2 bg-indigo-600 rounded transition">
+          <i data-feather="box" class="mr-2"></i> Barang
+        </a>
+        <a href="transaksi.html" class="flex items-center px-3 py-2 hover:bg-indigo-600 rounded transition">
+          <i data-feather="repeat" class="mr-2"></i> Transaksi
+        </a>
+        <a href="laporan.html" class="flex items-center px-3 py-2 hover:bg-indigo-600 rounded transition">
+          <i data-feather="file-text" class="mr-2"></i> Laporan
+        </a>
+      </nav>
+      <div class="p-4 text-sm text-gray-300 border-t border-indigo-600">
+        &copy; 2025 Adji Sudar Wijaya
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+      <!-- Header -->
+      <header class="bg-white shadow p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-gray-800">Manajemen Barang</h1>
+        <div class="text-sm text-gray-600">Inventory Sederhana untuk UMKM</div>
+      </header>
+
+      <!-- Main Section -->
+      <main class="p-6 overflow-y-auto">
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Form Tambah -->
+          <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold mb-4">Tambah Barang</h3>
+            <label class="block mb-1 text-sm font-medium text-gray-700">Nama Barang</label>
+            <input type="text" id="itemName" placeholder="Contoh: Kardus"
+              class="w-full p-2 border rounded mb-4 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+            
+            <label class="block mb-1 text-sm font-medium text-gray-700">Jumlah</label>
+            <input type="number" id="itemQty" placeholder="Contoh: 10"
+              class="w-full p-2 border rounded mb-4 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+            
+            <div class="flex gap-2">
+              <button onclick="addItem()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded shadow">+ Tambah</button>
+              <button onclick="resetInventory()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow">Reset</button>
+            </div>
+          </div>
+
+          <!-- Tabel Barang -->
+          <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold mb-4">Daftar Barang</h3>
+            <div class="overflow-x-auto">
+              <table class="table-auto w-full text-sm">
+                <thead>
+                  <tr class="bg-gray-200 text-gray-700">
+                    <th class="px-4 py-2 text-left">Nama Barang</th>
+                    <th class="px-4 py-2 text-left">Jumlah</th>
+                    <th class="px-4 py-2 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryList">
+                  <tr class="text-center text-gray-400"><td colspan="3">Belum ada data.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
+              <div>Total Stok: <span id="totalQty" class="font-bold">0</span></div>
+              <button onclick="printInventory()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm shadow">Cetak</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    feather.replace();
+
+    let inventory = [];
+
+    function renderInventory() {
+      const list = document.getElementById("inventoryList");
+      const totalQty = document.getElementById("totalQty");
+      list.innerHTML = "";
+
+      if (inventory.length === 0) {
+        list.innerHTML = `<tr class="text-center text-gray-400"><td colspan="3">Belum ada data.</td></tr>`;
+        totalQty.textContent = 0;
+        return;
+      }
+
+      let total = 0;
+      inventory.forEach((item, index) => {
+        total += item.qty;
+        list.innerHTML += `
+          <tr>
+            <td class="px-4 py-2">${item.name}</td>
+            <td class="px-4 py-2">${item.qty}</td>
+            <td class="px-4 py-2 text-center">
+              <button onclick="deleteItem(${index})" class="text-red-500 hover:text-red-700">Hapus</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      totalQty.textContent = total;
+    }
+
+    function addItem() {
+      const name = document.getElementById("itemName").value.trim();
+      const qty = parseInt(document.getElementById("itemQty").value);
+
+      if (!name || isNaN(qty) || qty <= 0) {
+        alert("Nama barang dan jumlah wajib diisi dengan benar.");
+        return;
+      }
+
+      inventory.push({ name, qty });
+      document.getElementById("itemName").value = "";
+      document.getElementById("itemQty").value = "";
+      renderInventory();
+    }
+
+    function deleteItem(index) {
+      inventory.splice(index, 1);
+      renderInventory();
+    }
+
+    function resetInventory() {
+      if (confirm("Yakin ingin mereset semua data?")) {
+        inventory = [];
+        renderInventory();
+      }
+    }
+
+    function printInventory() {
+      let output = "Laporan Inventaris\n\n";
+      inventory.forEach((item, i) => {
+        output += `${i + 1}. ${item.name} - ${item.qty}\n`;
+      });
+      output += `\nTotal Stok: ${inventory.reduce((a, b) => a + b.qty, 0)}\n`;
+
+      const win = window.open("", "", "width=600,height=400");
+      win.document.write(`<pre>${output}</pre>`);
+      win.document.close();
+      win.print();
+    }
+
+    renderInventory();
+  </script>
+</body>
+</html>
